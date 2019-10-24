@@ -1,0 +1,267 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "Proposed Application Key Registration",
+    "description" : "Application Key registration for FA-11",
+    "version" : "1.0.0"
+  },
+  "servers" : [ {
+    "url" : "/"
+  } ],
+  "paths" : {
+    "/appkey/rest/{appId}" : {
+      "get" : {
+        "summary" : "Get application key identifiers",
+        "description" : "Return a list of all the application key identifiers associated with the application. If none are found, then return an empty list.",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "raw identifier for the REST API key to be retrieved",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "example" : "ellVeXrfiMrHnUCnUpHjO9scJTC2kc55p8UaQEJy"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RestKey"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "REST API key not found"
+          }
+        },
+        "security" : [ {
+          "OAuth2" : [ "read" ]
+        } ]
+      }
+    },
+    "/appkey/rest" : {
+      "put" : {
+        "summary" : "Update existing application. This should only update an existing REST API key and creation should be rejected",
+        "description" : "Updates the original API key fields to the new ones.",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RestKey"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content",
+            "headers" : {
+              "Content-Location" : {
+                "description" : "URI to the updated REST API key",
+                "style" : "simple",
+                "explode" : false,
+                "schema" : {
+                  "type" : "string"
+                },
+                "example" : "https://appkey/rest/ellVeXrfiMrHnUCnUpHjO9scJTC2kc55p8UaQEJy"
+              }
+            }
+          },
+          "404" : {
+            "description" : "REST API key not found"
+          }
+        },
+        "security" : [ {
+          "OAuth2" : [ "write" ]
+        } ]
+      },
+      "post" : {
+        "summary" : "Create new Rest application key identifiers",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RestKeyCreateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "An API key suitable for REST API requests",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RestKey"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "OAuth2" : [ "write" ]
+        } ]
+      },
+      "delete" : {
+        "summary" : "Delete the REST API key",
+        "description" : "Delete an application and associated keys",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "string",
+                "description" : "URI to the REST API key to be deleted",
+                "example" : "https://appkey/rest/ellVeXrfiMrHnUCnUpHjO9scJTC2kc55p8UaQEJy"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content - The REST API key has been deleted"
+          },
+          "404" : {
+            "description" : "REST API key cannot be found"
+          }
+        },
+        "security" : [ {
+          "OAuth2" : [ "write" ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "ServiceType" : {
+        "type" : "string",
+        "description" : "The environments in which a key is valid",
+        "enum" : [ "test", "future", "live" ]
+      },
+      "RestKey" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "Self identifier for this REST API key",
+            "example" : "https://appkey/rest/ellVeXrfiMrHnUCnUpHjO9scJTC2kc55p8UaQEJy"
+          },
+          "applicationId" : {
+            "type" : "string",
+            "description" : "The id of the application associated with the REST API key",
+            "readOnly" : true,
+            "example" : "xyzzy"
+          },
+          "keyType" : {
+            "type" : "string",
+            "readOnly" : true,
+            "example" : "rest",
+            "default" : "rest"
+          },
+          "key" : {
+            "type" : "string",
+            "description" : "Rest API Key's value",
+            "readOnly" : true,
+            "example" : "ellVeXrfiMrHnUCnUpHjO9scJTC2kc55p8UaQEJy"
+          },
+          "restrictedIPs" : {
+            "maxItems" : 5,
+            "minItems" : 0,
+            "type" : "array",
+            "description" : "List of IP addresses which may use this REST API key",
+            "items" : {
+              "type" : "string",
+              "example" : "[\"127.0.0.1\",\"192.168.0.1\",\"93.184.216.34\"]"
+            }
+          },
+          "javaScriptDomains" : {
+            "type" : "array",
+            "description" : "JavaScript domains authorized to use this REST API key",
+            "items" : {
+              "type" : "string",
+              "example" : "[\"https://example.com\",\"https://js.example.com\"]"
+            }
+          },
+          "registeredTime" : {
+            "type" : "string",
+            "format" : "date-time",
+            "readOnly" : true
+          }
+        }
+      },
+      "RestKeyCreateRequest" : {
+        "type" : "object",
+        "properties" : {
+          "applicationId" : {
+            "type" : "string",
+            "description" : "Id of the application to be associated with the REST API key",
+            "example" : "xyzzy"
+          },
+          "services" : {
+            "minItems" : 1,
+            "uniqueItems" : true,
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ServiceType"
+            }
+          },
+          "restrictedIPs" : {
+            "maxItems" : 5,
+            "minItems" : 0,
+            "type" : "array",
+            "description" : "List of IP addresses which may use this REST API key",
+            "items" : {
+              "type" : "string",
+              "example" : "[\"127.0.0.1\",\"192.168.0.1\",\"93.184.216.34\"]"
+            }
+          },
+          "javaScriptDomains" : {
+            "maxItems" : 5,
+            "minItems" : 0,
+            "type" : "array",
+            "description" : "Authorized JavaScript domains to use this REST API key",
+            "items" : {
+              "type" : "string",
+              "example" : "[\"localhost\",\"example.com\"]"
+            }
+          }
+        },
+        "description" : "Data required to create a REST API application key"
+      }
+    },
+    "responses" : {
+      "RestApiKeyResponse" : {
+        "description" : "An API key suitable for REST API requests",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/RestKey"
+            }
+          }
+        }
+      }
+    },
+    "requestBodies" : { },
+    "securitySchemes" : {
+      "OAuth2" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "scopes" : {
+              "read" : "Grants read access",
+              "write" : "Grants write access"
+            }
+          }
+        }
+      }
+    }
+  }
+}

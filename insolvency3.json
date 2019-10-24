@@ -1,0 +1,483 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Insolvency Specification",
+    "description": "Open API Insolvency spec",
+    "termsOfService": "https://example.com/terms/",
+    "contact": {
+      "name": "API Support",
+      "url": "https://www.example.com/support",
+      "email": "support@example.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0.1"
+  },
+  "servers": [
+    {
+      "url": "https://api.companieshouse.gov.uk",
+      "description": "API Companies House"
+    },
+    {
+      "url": "http://api.companieshouse.gov.uk",
+      "description": "API Companies House"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Insolvency",
+      "description": "Insolvency Operations"
+    }
+  ],
+  "security": [
+    {
+      "Oauth": [
+        "read:insolvency"
+      ]
+    }
+  ],
+  "paths": {
+    "/company/{company_number}/insolvency": {
+      "get": {
+        "summary": "Get Company Insolvency Information",
+        "tags": [
+          "Insolvency"
+        ],
+        "operationId": "readCompanyInsolvency",
+        "parameters": [
+          {
+            "name": "company_number",
+            "in": "path",
+            "description": "The company number of the basic information to return.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string",
+                "properties": {
+                  "name": {
+                    "description": "Read Company Insolvency Information",
+                    "type": "string"
+                  },
+                  "status": {
+                    "description": "Read Company Insolvency Information",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              }
+            }
+          }
+        },
+        "externalDocs": {
+          "description": "Learn more about this API at Companies House",
+          "url": "https://www.gov.uk/government/organisations/companies-house"
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/responses/200"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorised",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/error"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "OAuth2" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "scopes" : {
+              "read" : "Grants read access",
+              "write" : "Grants write access"
+            }
+          }
+        }
+      }
+    },
+      "responses": {
+        "200": {
+          "description": "Success",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/companyInsolvency"
+                }
+              }
+            }
+          }
+        },
+        "401": {
+          "description": "Unauthorised",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Resource not found",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+    },
+    "schemas": {
+      "companyInsolvency": {
+        "required": [
+          "cases",
+          "etag",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "etag": {
+            "type": "string",
+            "description": "The ETag of the resource."
+          },
+          "cases": {
+            "type": "array",
+            "description": "List of insolvency cases.",
+            "items": {
+              "$ref": "#/components/schemas/case"
+            }
+          },
+          "status": {
+            "type": "array",
+            "description": "Company insolvency status details",
+            "items": {
+              "type": "object",
+              "description": "(DRC) Unsure what these should be. See original swagger 1.2 source to derive",
+              "properties": {}
+            }
+          }
+        }
+      },
+      "practitioners": {
+        "required": [
+          "address",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the practitioner.",
+            "example": "John Doe"
+          },
+          "address": {
+            "type": "array",
+            "description": "The practitioners' address.",
+            "items": {
+              "$ref": "#/components/schemas/practitionerAddress"
+            }
+          },
+          "appointed_on": {
+            "type": "string",
+            "description": "The date the practitioner was appointed on.",
+            "format": "date"
+          },
+          "ceased_to_act_on": {
+            "type": "string",
+            "description": "The date the practitioner ceased to act for the case.",
+            "format": "date"
+          },
+          "role": {
+            "type": "string",
+            "description": "The type of role.",
+            "enum": [
+              "final-liquidator",
+              "receiver",
+              "receiver-manager",
+              "proposed-liquidator",
+              "provisional-liquidator",
+              "administrative-receiver",
+              "practitioner",
+              "interim-liquidator"
+            ]
+          }
+        }
+      },
+      "case": {
+        "required": [
+          "dates",
+          "practitioners",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "The type of case.<br /><br /> For enumeration descriptions see <code>insolvency_case_type</code> section in the <a href='https://github.com/companieshouse/api-enumerations/blob/master/constants.yml' rel='external'/>enumeration mappings</a>.<br /><br />",
+            "enum": [
+              "compulsory-liquidation",
+              "creditors-voluntary-liquidation",
+              "members-voluntary-liquidation",
+              "in-administration",
+              "corporate-voluntary-arrangement",
+              "corporate-voluntary-arrangement-moratorium",
+              "administration-order",
+              "receiver-manager",
+              "administrative-receiver",
+              "receivership",
+              "foreign-insolvency"
+            ]
+          },
+          "dates": {
+            "type": "array",
+            "description": "The dates specific to the case.",
+            "items": {
+              "$ref": "#/components/schemas/caseDates"
+            }
+          },
+          "notes": {
+            "type": "array",
+            "description": "Notes that apply to the case.45",
+            "items": {
+              "type": "string"
+            }
+          },
+          "practitioners": {
+            "type": "array",
+            "description": "The practitioners for the case.",
+            "items": {
+              "$ref": "#/components/schemas/practitioners"
+            }
+          },
+          "links": {
+            "type": "array",
+            "description": "The resources related to this case",
+            "items": {
+              "$ref": "#/components/schemas/links"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "description": "The case number."
+          }
+        }
+      },
+      "caseDates": {
+        "required": [
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Describes what date is represented by the associated <code>date</code> element. <br /><br /> For enumeration descriptions see <code>insolvency_case_date_type</code> section in the <a href='https://github.com/companieshouse/api-enumerations/blob/master/constants.yml' rel='external'enumeration mappings</a>.<br /><br />",
+            "enum": [
+              "instrumented-on",
+              "administration-started-on",
+              "administration-discharged-on",
+              "administration-ended-on",
+              "concluded-winding-up-on",
+              "petitioned-on",
+              "ordered-to-wind-up-on",
+              "due-to-be-dissolved-on",
+              "case-end-on",
+              "wound-up-on",
+              "voluntary-arrangement-started-on",
+              "voluntary-arrangement-ended-on",
+              "moratorium-started-on",
+              "moratorium-ended-on",
+              "declaration-solvent-on"
+            ]
+          },
+          "date": {
+            "type": "string",
+            "description": "The case date in an ISO 8601 format",
+            "format": "date",
+            "example": "1997-07-16"
+          }
+        }
+      },
+      "error_values": {
+        "type": "object",
+        "properties": {
+          "<argument>": {
+            "type": "object",
+            "properties": {},
+            "description": "The element name and value pair required to complete the error description, will repeat as necessary."
+          }
+        }
+      },
+      "errorDetail": {
+        "required": [
+          "error",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Type of error.",
+            "enum": [
+              "ch:service",
+              "ch:validation"
+            ]
+          },
+          "location_type": {
+            "type": "string",
+            "description": "Describes the type of location returned so that it may be parsed appropriately.",
+            "enum": [
+              "json-path",
+              "query-parameter"
+            ]
+          },
+          "location": {
+            "type": "string",
+            "description": "The location in the submitted request in which the error relates. This parameter is only provided when errors[].type is set to \"ch:validation\"."
+          },
+          "error": {
+            "type": "string",
+            "description": "The error being returned. See github for valid <a href=\"https://github.com/companieshouse/api-enumerations/blob/develop/errors.yml\">error enumeration types</a>."
+          },
+          "error_values": {
+            "type": "array",
+            "description": "A collection of argument name and value pairs which, when substituted into the error string, provide the full description of the error. As many name/value pairs as necessary to complete the error description are returned. See <a href=\"\">example</a> above.",
+            "items": {
+              "$ref": "#/components/schemas/error_values"
+            }
+          }
+        }
+      },
+      "error": {
+        "required": [
+          "errors"
+        ],
+        "type": "object",
+        "properties": {
+          "errors": {
+            "type": "array",
+            "description": "A list of errors found",
+            "items": {
+              "$ref": "#/components/schemas/errorDetail"
+            }
+          }
+        }
+      },
+      "links": {
+        "type": "object",
+        "properties": {
+          "charge": {
+            "type": "string",
+            "description": "The link to the charge this case is lodged against."
+          }
+        }
+      },
+      "practitionerAddress": {
+        "required": [
+          "address_line_1",
+          "postal_code"
+        ],
+        "type": "object",
+        "properties": {
+          "address_line_1": {
+            "type": "string",
+            "description": "The first line of the address.",
+            "example": {
+              "address_line_1": "Crown Way"
+            }
+          },
+          "address_line_2": {
+            "type": "string",
+            "description": "The second line of the address.",
+            "example": {
+              "address_line_2": "Cardiff"
+            }
+          },
+          "locality": {
+            "type": "string",
+            "description": "The locality. For example Cardiff.",
+            "example": {
+              "locality": "Cardiff"
+            }
+          },
+          "region": {
+            "type": "string",
+            "description": "The region. For example Cardiff.",
+            "example": {
+              "region": "Glamorgan"
+            }
+          },
+          "postal_code": {
+            "type": "string",
+            "description": "The postal code. For example CF14 3UZ.",
+            "example": {
+              "postal_code": "CF14 3UZ"
+            }
+          },
+          "country": {
+            "type": "string",
+            "description": "The country.",
+            "example": {
+              "country": "UK"
+            }
+          }
+        }
+      }
+    }
+  }
+}
